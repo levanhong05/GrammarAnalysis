@@ -1,0 +1,9 @@
+S=NP VP
+S=NP VP PP
+NP=det NP3
+NP3=adj NP3
+NP3=noun
+NP3=noun PP
+PP=prep NP2
+NP2=det NP3
+VP=verb

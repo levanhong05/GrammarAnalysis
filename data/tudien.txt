@@ -1,0 +1,14 @@
+the	det
+young	adj
+student	noun
+sat	verb
+in	prep
+the	det
+class	noun
+an	det
+old	adj
+man	noun
+on	prep
+new	adj
+chair	noun
+house	noun
