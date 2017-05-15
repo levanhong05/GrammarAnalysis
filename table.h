@@ -5,11 +5,10 @@
 
 #include "grammarrule.h"
 
-class Table : public QObject
+class Table
 {
-    Q_OBJECT
 public:
-    explicit Table(QObject *parent = 0);
+    Table();
     ~Table();
 
     int length() const;
@@ -22,5 +21,7 @@ private:
     int _length;
 
 };
+
+typedef QList<Table> Tables;
 
 #endif // TABLE_H

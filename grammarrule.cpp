@@ -3,6 +3,7 @@
 GrammarRule::GrammarRule()
 {
     _length = 0;
+    _pointer = 0;
 }
 
 GrammarRule::~GrammarRule()
@@ -42,4 +43,29 @@ void GrammarRule::setLength(int length)
 int GrammarRule::items() const
 {
     return _items;
+}
+
+int GrammarRule::pointer() const
+{
+    return _pointer;
+}
+
+void GrammarRule::setPointer(int pointer)
+{
+    _pointer = pointer;
+}
+
+void GrammarRule::copy(GrammarRule grammar)
+{
+    _left = grammar.left();
+    _right = grammar.right();
+
+    _length = grammar.length();
+    _items = grammar.items();
+    _pointer = grammar.pointer();
+}
+
+void GrammarRule::setItems(int items)
+{
+    _items = items;
 }

@@ -7,11 +7,10 @@
 
 #define MAX_SIZE 100
 
-class Stack : public QObject
+class Stack
 {
-    Q_OBJECT
 public:
-    explicit Stack(QObject *parent = 0);
+    Stack();
     ~Stack();
 
     bool isFull();

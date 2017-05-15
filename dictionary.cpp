@@ -1,7 +1,6 @@
 #include "dictionary.h"
 
-Dictionary::Dictionary(QString content, QString classifier, QObject *parent) :
-    QObject(parent)
+Dictionary::Dictionary(QString content, QStringList classifier)
 {
     _word = content;
     _classifier = classifier;

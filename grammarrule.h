@@ -19,6 +19,12 @@ public:
     void setLength(int length);
 
     int items() const;
+    void setItems(int items);
+
+    int pointer() const;
+    void setPointer(int pointer);
+
+    void copy(GrammarRule grammar);
 
 private:
     QString _left;

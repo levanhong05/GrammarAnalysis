@@ -1,7 +1,6 @@
 #include "table.h"
 
-Table::Table(QObject *parent) :
-    QObject(parent)
+Table::Table()
 {
 }
 

@@ -1,7 +1,6 @@
 #include "stack.h"
 
-Stack::Stack(QObject *parent) :
-    QObject(parent)
+Stack::Stack()
 {
 }
 

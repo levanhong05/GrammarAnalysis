@@ -30,13 +30,13 @@ private:
 
     void print(Table table);
 
-    void expand(Table &bangi, GrammarRules grammars, int i, int check[], Stack &s, GrammarRule tam, int t);
-    void backTracking(Table bangi[], Stack &s, GrammarRule tam, int m, int n);
+    void expand(Table &table, GrammarRules grammars, Stack &stack, GrammarRule temp, QList<int> check, int i, int t);
+    void backTracking(Tables tables, Stack &stack, GrammarRule temp, int m, int n);
 
-    void initializeTable(Table &bang0, GrammarRules grammars, int i);
-    void generateTable(Table bangi[], GrammarRules grammars, int i, int m, QStringList s1, int n);
+    void initializeTable(Table &table, GrammarRules grammars, int i);
+    void generateTable(Tables tables, GrammarRules grammars, int i, int m, QStringList s1, int n);
 
-    bool analyseGrammar(GrammarRules grammars, Dictionaries dictionaries);
+    bool analyseGrammar(GrammarRules grammars, Dictionaries dictionaries, int i);
 };
 
 #endif // EARLEYALGORITHM_H

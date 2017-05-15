@@ -3,11 +3,10 @@
 
 #include <QObject>
 
-class Dictionary : public QObject
+class Dictionary
 {
-    Q_OBJECT
 public:
-    explicit Dictionary(QString content = "", QString classifier = "", QObject *parent = 0);
+    Dictionary(QString content = "", QStringList classifier = QStringList());
     ~Dictionary();
 
     QString word() const;

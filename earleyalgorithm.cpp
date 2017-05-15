@@ -16,12 +16,13 @@ EarleyAlgorithm::~EarleyAlgorithm()
 
 bool EarleyAlgorithm::excute()
 {
+    int i = 0;
     //initializeGrammar(a);
     GrammarRules grammars = grammarReader();
     Dictionaries dictionaries = dictionaryReader();
-    cout << analyseGrammar(grammars, dictionaries);
-}
 
+    return analyseGrammar(grammars, dictionaries, i);
+}
 
 void EarleyAlgorithm::initializeStack(Stack &stack)
 {
@@ -38,6 +39,7 @@ Dictionaries EarleyAlgorithm::dictionaryReader()
 
     QTextStream in(&file);
     QString line = "";
+
     Dictionaries dictionaries;
 
     while (!in.atEnd()) {
@@ -45,13 +47,15 @@ Dictionaries EarleyAlgorithm::dictionaryReader()
         QStringList values = line.split(QRegExp("\\\t"), QString::SkipEmptyParts);
 
         if (values.size() == 2) {
-            dictionaries.append(Dictionary(values[0], values[1]));
+            dictionaries.append(Dictionary(values[0],
+                                QStringList() << values[1].split(QRegExp("\\,|\\ "), QString::SkipEmptyParts)));
         } else if (values.size() == 1) {
             dictionaries.append(Dictionary(values[0]));
         }
     }
 
     file.close();
+
     return dictionaries;
 }
 
@@ -70,23 +74,28 @@ GrammarRules EarleyAlgorithm::grammarReader()
 
     QTextStream in(&file);
     QString line = "";
+
     GrammarRules grammars;
 
     while (!in.atEnd()) {
         line = in.readLine().trimmed();
+
         QStringList values = line.split("=", QString::SkipEmptyParts);
 
         if (values.size() == 2) {
             GrammarRule grammar;
             grammar.setLeft(values[0].trimmed());
+
             QStringList tokens = values[1].split(" ", QString::SkipEmptyParts);
             grammar.setRight(tokens);
             grammar.setLength(tokens.size());
+
             grammars.append(grammar);
         }
     }
 
     file.close();
+
     return grammars;
 }
 
@@ -111,11 +120,13 @@ QStringList EarleyAlgorithm::analyseWord(Dictionaries dictionaries)
 
     QTextStream in(&file);
     QString line = "";
+
     QStringList tokens;
     QStringList types;
 
     while (!in.atEnd()) {
         line = in.readLine().trimmed();
+
         tokens = line.split(QRegExp("\\ "), QString::SkipEmptyParts);
 
         foreach (QString token, tokens) {
@@ -124,6 +135,7 @@ QStringList EarleyAlgorithm::analyseWord(Dictionaries dictionaries)
     }
 
     file.close();
+
     return types;
 }
 
@@ -140,142 +152,168 @@ void EarleyAlgorithm::print(Table table)
     }
 }
 
-void EarleyAlgorithm::expand(Table &bangi, GrammarRules grammars, int i, int check[], Stack &s, GrammarRule tam, int t)
+void EarleyAlgorithm::expand(Table &table, GrammarRules grammars, Stack &stack, GrammarRule temp, QList<int> check, int i, int t)
 {
     for (int j = 0; j < i; j++) {
-        if (grammars[j].trai == tam.phai[tam.contro] && check[j] == 0) {
+        if (grammars[j].left() == temp.right().at(temp.pointer()) && check[j] == 0) {
             check[j] = 1;
-            bangi.tram[bangi.sotram] = grammars[j];
-            bangi.tram[bangi.sotram].contro = 0;
-            bangi.tram[bangi.sotram].item = t;
-            push(s, bangi.tram[bangi.sotram]);
-            bangi.sotram++;
+
+            table.itemAt(table.length()).copy(grammars[j]);
+            table.itemAt(table.length()).setPointer(0);
+            table.itemAt(table.length()).setItems(t);
+
+            stack.push(table.itemAt(table.length()));
+
+            table.setLength(table.length() + 1);
         }
     }
 }
 
-void EarleyAlgorithm::backTracking(Table bangi[], Stack &s, GrammarRule tam, int m, int n)
+void EarleyAlgorithm::backTracking(Tables tables, Stack &stack, GrammarRule temp, int m, int n)
 {
     int check = 0;
 
-    for (int j = 0; j < bangi[tam.item].sotram; j++) {
-        if (tam.trai == bangi[tam.item].tram[j].phai[bangi[tam.item].tram[j].contro] && check == 0) {
-            bangi[m].tram[bangi[m].sotram] = bangi[tam.item].tram[j];
-            bangi[m].tram[bangi[m].sotram].contro++;
-            push(s, bangi[m].tram[bangi[m].sotram]);
-            bangi[m].sotram++;
+    for (int j = 0; j < tables[temp.items()].length(); j++) {
+        if (temp.left() == tables[temp.items()].itemAt(j).right().at(tables[temp.items()].itemAt(j).pointer()) && check == 0) {
+            tables[m].itemAt(tables[m].length()).copy(tables[temp.items()].itemAt(j));
+            tables[m].itemAt(tables[m].length()).setPointer(tables[m].itemAt(tables[m].length()).pointer() + 1);
 
-            if (n == m && bangi[tam.item].tram[j].trai == "S") {
+            stack.push(tables[m].itemAt(tables[m].length()));
+
+            tables[m].setLength(tables[m].length() + 1);
+
+            if (n == m && tables[temp.items()].itemAt(j).left() == "S") {
                 check = 1;
             }
         }
     }
 }
 
-void EarleyAlgorithm::initializeTable(Table &bang0, GrammarRules grammars, int i)
+void EarleyAlgorithm::initializeTable(Table &table, GrammarRules grammars, int i)
 {
     int k = 0;
     int flag = 0;
-    stack s;
-    initializeStack(s);
-    int check[i];
+
+    Stack stack;
+
+    initializeStack(stack);
+    QList<int> check;
 
     for (int j = 0; j < i; j++) {
-        check[j] = 0;
+        check.append(0);
     }
 
     for (int j = 0; j < i && flag != 2; j++) {
-        if (grammars[j].trai == "S") {
-            bang0.tram[k] = grammars[j];
-            bang0.tram[k].contro = 0;
-            bang0.tram[k].item = 0;
-            bang0.sotram = k + 1;
-            push(s, bang0.tram[k]);
+        if (grammars[j].left() == "S") {
+            table.itemAt(k).copy(grammars[j]);
+
+            table.itemAt(k).setPointer(0);
+            table.itemAt(k).setItems(0);
+            table.setLength(k + 1);
+
+            stack.push(table.itemAt(k));
+
             k++;
+
             flag = 1;
         }
 
-        if (flag == 1 && grammars[j].trai != "S") {
+        if (flag == 1 && grammars[j].left() != "S") {
             flag = 2;
         }
     }
 
-    while (isEmpty(s) != 1) {
-        nguphap tam;
-        pop(s, tam);
-        string b = tam.phai[tam.contro];
+    while (!stack.isEmpty()) {
+        GrammarRule temp;
+        temp = stack.pop();
 
-        if (b[0] >= 'A' && b[0] <= 'Z') {
-            expand(bang0, grammars, i, check, s, tam, 0);
+        QString token = temp.right().at(temp.pointer());
+
+        if (token[0] >= 'A' && token[0] <= 'Z') {
+            expand(table, grammars, stack, temp, check, i, 0);
         }
     }
 }
 
-void EarleyAlgorithm::generateTable(Table bangi[], GrammarRules grammars, int i, int m, QStringList s1, int n)
+void EarleyAlgorithm::generateTable(Tables tables, GrammarRules grammars, int i, int m, QStringList s1, int n)
 {
     int k = 0;
-    stack s;
-    initializeStack(s);
-    int check[i];
+    Stack stack;
+    initializeStack(stack);
+    QList<int> check;
 
     for (int j = 0; j < i; j++) {
-        check[j] = 0;
+        check.append(0);
     }
 
-    for (int j = 0; j < bangi[m - 1].sotram; j++) {
-        if (s1[m - 1] == bangi[m - 1].tram[j].phai[bangi[m - 1].tram[j].contro]) {
-            bangi[m].tram[k] = bangi[m - 1].tram[j];
-            bangi[m].tram[k].contro++;
-            bangi[m].sotram = k + 1;
-            push(s, bangi[m].tram[k]);
+    for (int j = 0; j < tables[m - 1].length(); j++) {
+        if (s1[m - 1] == tables[m - 1].itemAt(j).right().at(tables[m - 1].itemAt(j).pointer())) {
+            tables[m].itemAt(k).copy(tables[m - 1].itemAt(j));
+            tables[m].itemAt(k).setPointer(tables[m].itemAt(k).pointer() + 1);
+            tables[m].setLength(k + 1);
+
+            stack.push(tables[m].itemAt(k));
+
             k++;
         }
     }
 
-    while (isEmpty(s) != 1) {
-        nguphap tam;
-        pop(s, tam);
+    while (!stack.isEmpty()) {
+        GrammarRule temp;
+        temp = stack.pop();
 
-        if (m == n && tam.trai == "S") {
+        if (m == n && temp.left() == "S") {
             break;
         }
 
-        string b = tam.phai[tam.contro];
+        QString token = temp.right().at(temp.pointer());
 
-        if (tam.contro == tam.dodai) {
-            backTracking(bangi, s, tam, m, n);
+        if (temp.pointer() == temp.length()) {
+            backTracking(tables, stack, temp, m, n);
         }
 
-        if (b[0] >= 'A' && b[0] <= 'Z') {
-            expand(bangi[m], grammars, i, check, s, tam, m);
+        if (token[0] >= 'A' && token[0] <= 'Z') {
+            expand(tables[m], grammars, stack, temp, check, i, m);
         }
     }
 }
 
-bool EarleyAlgorithm::analyseGrammar(GrammarRules grammars, Dictionaries dictionaries)
+bool EarleyAlgorithm::analyseGrammar(GrammarRules grammars, Dictionaries dictionaries, int i)
 {
-    QString s[100];// toi da 100 tu trong 1 cau
     int k = 0;
-    QStringList type = analyseWord(dictionaries);
-    bang bangi[k + 1];
-    initializeTable(bangi[0], grammars, i);
-    cout << "bang 0:" << endl;
-    xuatbang(bangi[0]);
+
+    QStringList types = analyseWord(dictionaries);
+
+    Tables tables;
+
+    Table table;
+
+    initializeTable(table, grammars, i);
+
+    qDebug() << "bang 0:";
+
+    print(table);
+
+    tables.append(table);
 
     for (int m = 1; m <= k; m++) {
-        bangi[m].sotram = 0;
+        Table table;
+        table.setLength(0);
+
+        tables.append(table);
     }
 
     for (int m = 1; m <= k; m++) {
-        generateTable(bangi, grammars, i, m, s, k);
-        cout << "bang " << m << ':' << endl;
-        xuatbang(bangi[m]);
+        generateTable(tables, grammars, i, m, types, k);
+
+        qDebug() << "bang " << m << ":";
+        print(tables[m]);
     }
 
-    int u = bangi[k].tram[bangi[k].sotram - 1].contro;
-    int v = bangi[k].tram[bangi[k].sotram - 1].dodai;
+    int u = tables[k].itemAt(tables[k].length() - 1).pointer();
+    int v = tables[k].itemAt(tables[k].length() - 1).length();
 
-    if (bangi[k].tram[bangi[k].sotram - 1].trai == "S" && u == v) {
+    if (tables[k].itemAt(tables[k].length() - 1).left() == "S" && u == v) {
         return true;
     } else {
         return false;
